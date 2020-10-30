@@ -15,6 +15,7 @@ func main() {
 
 	app := planning.New(
 		planning.WithLogger(log),
+		planning.OpenBrowser,
 	)
 	if err := app.Run(); err != nil {
 		log.Error().

@@ -9,3 +9,7 @@ func WithLogger(log zerolog.Logger) Opt {
 		app.log = log
 	}
 }
+
+func OpenBrowser(app *Application) {
+	app.openBrowser = true
+}

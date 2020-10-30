@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/pkg/browser"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 type Server struct {
@@ -30,7 +32,7 @@ func New(log zerolog.Logger, addr string, data Repository) *Server {
 	return srv
 }
 
-func (s *Server) Start() error {
+func (s *Server) Start(openBrowser bool) error {
 	httpSrv := http.Server{
 		Handler:      s.router,
 		ReadTimeout:  30 * time.Second,
@@ -40,10 +42,19 @@ func (s *Server) Start() error {
 	if err != nil {
 		return fmt.Errorf("listen: %w", err)
 	}
+	listenerAddress := lis.Addr().String()
+
+	if openBrowser {
+		if err := browser.OpenURL("http://" + listenerAddress); err != nil {
+			log.Error().
+				Err(err).
+				Msg("open browser")
+		}
+	}
 
 	s.log.Debug().
 		Str("addr", s.addr).
-		Str("listen", lis.Addr().String()).
+		Str("listen", listenerAddress).
 		Msg("start server")
 	if err := httpSrv.Serve(lis); err != http.ErrServerClosed {
 		return fmt.Errorf("serve: %w", err)

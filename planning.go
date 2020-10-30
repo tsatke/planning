@@ -12,6 +12,8 @@ import (
 type Application struct {
 	log zerolog.Logger
 	db  *db.DB
+
+	openBrowser bool
 }
 
 func New(opts ...Opt) *Application {
@@ -31,8 +33,8 @@ func (app Application) Run() error {
 	}
 	defer func() { _ = db.Close() }()
 
-	srv := server.New(app.log, ":51560", dataAccess{db})
-	if err := srv.Start(); err != nil {
+	srv := server.New(app.log, ":0", dataAccess{db})
+	if err := srv.Start(app.openBrowser); err != nil {
 		return err
 	}
 
