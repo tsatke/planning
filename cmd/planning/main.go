@@ -3,9 +3,8 @@ package main
 import (
 	"os"
 
-	"planning"
-
 	"github.com/rs/zerolog"
+	"github.com/tsatke/planning"
 )
 
 func main() {

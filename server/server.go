@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"github.com/pkg/browser"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -15,25 +15,32 @@ import (
 type Server struct {
 	log    zerolog.Logger
 	addr   string
-	router *mux.Router
+	router *gin.Engine
+
+	lis     net.Listener
+	httpSrv http.Server
 
 	data Repository
+
+	listening chan struct{}
 }
 
 func New(log zerolog.Logger, addr string, data Repository) *Server {
 	srv := &Server{
 		log:    log,
 		addr:   addr,
-		router: mux.NewRouter().StrictSlash(true),
+		router: gin.New(),
 
 		data: data,
+
+		listening: make(chan struct{}),
 	}
 	srv.setupRoutes()
 	return srv
 }
 
 func (s *Server) Start(openBrowser bool) error {
-	httpSrv := http.Server{
+	s.httpSrv = http.Server{
 		Handler:      s.router,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -42,10 +49,9 @@ func (s *Server) Start(openBrowser bool) error {
 	if err != nil {
 		return fmt.Errorf("listen: %w", err)
 	}
-	listenerAddress := lis.Addr().String()
-
+	s.lis = lis
 	if openBrowser {
-		if err := browser.OpenURL("http://" + listenerAddress); err != nil {
+		if err := browser.OpenURL("http://" + s.Addr()); err != nil {
 			log.Error().
 				Err(err).
 				Msg("open browser")
@@ -54,10 +60,23 @@ func (s *Server) Start(openBrowser bool) error {
 
 	s.log.Debug().
 		Str("addr", s.addr).
-		Str("listen", listenerAddress).
+		Str("listen", s.Addr()).
 		Msg("start server")
-	if err := httpSrv.Serve(lis); err != http.ErrServerClosed {
+	close(s.listening)
+	if err := s.httpSrv.Serve(lis); err != http.ErrServerClosed {
 		return fmt.Errorf("serve: %w", err)
 	}
 	return nil
+}
+
+func (s *Server) Addr() string {
+	return s.lis.Addr().String()
+}
+
+func (s *Server) Listening() <-chan struct{} {
+	return s.listening
+}
+
+func (s *Server) Close() error {
+	return s.httpSrv.Close()
 }

@@ -17,6 +17,7 @@ func Open(log zerolog.Logger, dbFile string) (*DB, error) {
 	dialector := sqlite.Open(dbFile)
 	log.Debug().
 		Str("dialect", dialector.Name()).
+		Str("file", dbFile).
 		Msg("open database")
 	db, err := gorm.Open(dialector, &gorm.Config{})
 	if err != nil {

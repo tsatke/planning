@@ -3,10 +3,9 @@ package planning
 import (
 	"fmt"
 
-	"planning/db"
-	"planning/server"
-
 	"github.com/rs/zerolog"
+	"github.com/tsatke/planning/db"
+	"github.com/tsatke/planning/server"
 )
 
 type Application struct {

@@ -1,6 +1,6 @@
 package server
 
-import "planning/db"
+import "github.com/tsatke/planning/db"
 
 type Repository interface {
 	CreateCategory(name string) (*db.Category, error)

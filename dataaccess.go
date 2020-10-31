@@ -3,7 +3,7 @@ package planning
 import (
 	"fmt"
 
-	"planning/db"
+	"github.com/tsatke/planning/db"
 )
 
 // dataAccess acts as a dataAccess between server and database.
